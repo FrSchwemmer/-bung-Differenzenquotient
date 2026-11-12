@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Übung: Differenzenquotient – drei Niveaus</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1f5fa8;--sec:#7b3fb5;--tan:#e07b00;--ok:#2e7d32;--bad:#c62828;--bg:#f6f7fb;--card:#fff;--line:#d9dde7}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Fira Sans",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:#1d2330;font-size:17px;line-height:1.45}
+header{background:var(--blue);color:#fff;padding:10px 18px}
+header h1{margin:0;font-size:21px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;padding:14px 18px;max-width:1300px;margin:0 auto}
+.left{position:sticky;top:10px;align-self:start}
+.gbox{background:var(--card);border-radius:12px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+svg#g{width:100%;height:auto;max-height:78vh;display:block;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
+#readout{font-size:15px;color:#444;text-align:center;min-height:22px;padding:2px}
+.card{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.tabs{display:flex;gap:6px;margin-bottom:6px}
+.tab{flex:1;text-align:center;padding:8px 4px;border-radius:8px;background:#e6e9f1;color:#556;font-weight:600;font-size:15px;border:none;min-height:44px}
+.tab.on{background:var(--blue);color:#fff}
+.tab .st{display:block;font-size:13px;color:var(--ok);letter-spacing:1px;min-height:16px}
+.tab.on .st{color:#cfe6d1}
+.bar{height:8px;background:#e6e9f1;border-radius:4px;overflow:hidden;margin-bottom:4px}
+.bar div{height:100%;background:var(--ok);transition:width .4s}
+.infoline{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;min-height:30px}
+.stepinfo{font-size:14px;color:#667}
+.lvlbadge{display:inline-block;padding:2px 10px;border-radius:12px;color:#fff;font-size:14px;font-weight:600;margin-right:6px}
+button.small{min-height:36px;font-size:14px;padding:0 12px;background:#e6e9f1;color:#1d2330}
+h2{font-size:19px;margin:0 0 8px}
+.task{margin:0}
+.fields{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.frow label{min-width:160px}
+.frow .mark{font-size:20px;width:22px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+input[type=text]{font-size:18px;height:46px;width:120px;padding:0 10px;border:2px solid #b8bfcf;border-radius:8px;font-family:inherit}
+input[type=text]:focus{outline:none;border-color:var(--blue)}
+input.okf{border-color:var(--ok);background:#f1faf1}
+input.badf{border-color:var(--bad);background:#fff5f5}
+button{font-family:inherit;font-size:17px;min-height:46px;padding:0 16px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;touch-action:manipulation}
+button.sec{background:#e6e9f1;color:#1d2330}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.opt{background:#fff;color:#1d2330;border:2px solid #b8bfcf;text-align:left;padding:10px 14px;font-weight:400;min-height:48px}
+.opt.sel{border-color:var(--blue);background:#e8f0fb;font-weight:600;box-shadow:inset 0 0 0 1px var(--blue)}
+.opt.right{border-color:var(--ok);background:#e7f4e8;font-weight:600}
+.opt.wrong{border-color:var(--bad);background:#fdeaea}
+.lvl{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;min-height:72px;padding:10px 16px;margin-top:10px;background:#fff;color:#1d2330;border:3px solid;font-weight:400}
+.lvl b{font-size:19px}
+.lvl span{font-size:15px;color:#556}
+.lvl.done::after{content:"✔ erledigt";color:var(--ok);font-weight:700;font-size:14px}
+@media (hover:hover){button:hover{filter:brightness(1.06)}.opt:hover{border-color:var(--blue)}}
+.fb{margin-top:10px;padding:10px 12px;border-radius:8px;display:none}
+.fb.ok{display:block;background:#e7f4e8;border-left:5px solid var(--ok)}
+.fb.bad{display:block;background:#fdeaea;border-left:5px solid var(--bad)}
+.tip{display:none;margin-top:8px;padding:8px 12px;background:#fff8e1;border-radius:8px;font-size:16px}
+.src{display:inline-block;font-size:13px;background:#eef2f8;color:#2b3a55;border-radius:6px;padding:3px 8px;margin-bottom:8px}
+.tapinfo{margin-top:10px;padding:8px 12px;background:#f1e8fa;border-radius:8px;font-size:16px}
+.res{border-left:5px solid var(--ok)}
+.res h3,.merke h3{margin:0 0 6px;font-size:18px}
+.res ul{margin:0;padding-left:20px}
+.res li{margin-bottom:6px}
+.merke{display:none;border-left:6px solid var(--tan)}
+.merke p{margin:6px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px;line-height:1.25}
+.frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.frac>span:last-child{padding:0 3px}
+.mono{white-space:nowrap}
+table.dat{border-collapse:collapse;margin:8px 0;font-size:16px}
+table.dat td,table.dat th{border:1px solid var(--line);padding:5px 9px;text-align:center}
+table.dat th{background:#f0f2f7;text-align:left}
+.hint{font-size:14px;color:#667;margin-top:6px}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+@media (max-width:860px){
+ .wrap{grid-template-columns:1fr;padding:8px}
+ .left{position:sticky;top:0;z-index:5;background:var(--bg);padding-bottom:4px}
+ svg#g{max-height:38vh}
+ #readout{font-size:14px;min-height:18px}
+ .frow label{min-width:120px}
+}
+</style>
+</head>
+<body>
+<header><h1>Übung: Differenzenquotient – mittlere Änderungsrate</h1></header>
+<div class="wrap">
+ <div class="left">
+  <div class="gbox">
+   <svg id="g" viewBox="0 0 400 400" aria-label="Koordinatensystem"></svg>
+   <div id="readout"></div>
+  </div>
+ </div>
+ <div class="right">
+  <div class="tabs">
+   <button class="tab" id="tab0">1 Am Graphen<span class="st" id="st0"></span></button>
+   <button class="tab" id="tab1">2 Rechnerisch<span class="st" id="st1"></span></button>
+   <button class="tab" id="tab2">3 Sachkontext<span class="st" id="st2"></span></button>
+   <button class="tab" id="tab3">4 Abitur<span class="st" id="st3"></span></button>
+  </div>
+  <div class="bar"><div id="barfill" style="width:0"></div></div>
+  <div class="infoline"><div class="stepinfo" id="stepinfo"></div><button class="small" id="lvlchange" style="display:none">Niveau wechseln</button></div>
+  <div class="card" id="stepcard"></div>
+  <div class="card merke" id="merke">
+   <h3>Merke</h3>
+   <p>Die <b>mittlere Änderungsrate</b> einer Funktion f im Intervall [a; b] ist der <b>Differenzenquotient</b></p>
+   <p style="text-align:center"><span class="mono"><span class="frac"><span>Δy</span><span>Δx</span></span> = <span class="frac"><span>f(b) − f(a)</span><span>b − a</span></span></span></p>
+   <p>Geometrisch ist das die <b style="color:var(--sec)">Steigung der Sekante</b> durch die Graphpunkte A(a | f(a)) und B(b | f(b)).</p>
+   <p>Positiv: Die Werte nehmen <b>im Mittel</b> zu. Negativ: Sie nehmen im Mittel ab. Null: f(a) = f(b).</p>
+   <p style="margin-bottom:0">Im Sachkontext hat die mittlere Änderungsrate eine <b>Einheit</b>: Einheit von y pro Einheit von x, z. B. m/min.</p>
+  </div>
+  <div class="card res" id="res"><h3 id="restitle">Deine Ergebnisse</h3><ul id="reslist"></ul></div>
+  <div class="btnrow" id="nextwrap" style="display:none"></div>
+ </div>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+function fmt(x, d) {
+  if (d === undefined) d = 4;
+  let r = Math.round(x * Math.pow(10, d)) / Math.pow(10, d);
+  if (Object.is(r, -0)) r = 0;
+  return String(r).replace(".", ",").replace("-", "−");
+}
+const par = x => x < 0 ? "(" + fmt(x) + ")" : fmt(x);
+function parseNum(str) {
+  if (typeof str !== "string") return NaN;
+  const pct = str.indexOf("%") >= 0;
+  let s = str.replace(/%/g, "").replace(/[−–]/g, "-").replace(/°C\/min|°C\/h|m\/min|m\/s|km\/h|€\/Stück|°C|min|€|m|s|h/gi, "").replace(/\s/g, "").replace(/,/g, ".");
+  const fr = s.match(/^(-?\d*\.?\d+)\/(-?\d*\.?\d+)$/);
+  if (fr) { const d = parseFloat(fr[2]); return d === 0 ? NaN : parseFloat(fr[1]) / d / (pct ? 100 : 1); }
+  if (s === "" || !/^-?\d*\.?\d+$/.test(s)) return NaN;
+  return parseFloat(s) / (pct ? 100 : 1);
+}
+const frac = (z, n) => '<span class="frac"><span>' + z + '</span><span>' + n + '</span></span>';
+
+/* ================= Graphen ================= */
+function GG(o) { return Object.assign({ gx: 1, gy: 1, xn: "x", yn: "y", dxn: "Δx", dyn: "Δy" }, o); }
+const fA = x => x * x - 4 * x + 3;
+const fB = x => -0.5 * x * x + 2 * x + 1;
+const fC = x => x * x * x - 3 * x;
+const BAL = [[0, 0], [5, 150], [10, 400], [15, 550], [20, 600], [30, 450]];
+const TEMP = [[6, 4], [8, 6], [10, 10], [12, 14], [14, 16], [16, 15], [18, 12], [20, 9]];
+
+const GA = GG({ xmin: -1, xmax: 5, ymin: -2, ymax: 6, f: fA, flab: [4.3, 5.4, "f", "end"] });
+const GB = GG({ xmin: -1.5, xmax: 5.5, ymin: -3.5, ymax: 4, f: fB, flab: [5.3, -0.6, "f", "end"] });
+const GC = GG({ xmin: -2.5, xmax: 2.5, ymin: -4, ymax: 4, f: fC, flab: [1.15, -2.9, "f", "end"] });
+const GSQ = GG({ xmin: -3, xmax: 4, ymin: -1, ymax: 10, f: x => x * x, flab: [-2.9, 9.4, "f", "start"] });
+const GLIN = GG({ xmin: -1, xmax: 4, ymin: -2, ymax: 10, gy: 2, f: x => 2 * x + 1, flab: [3.2, 8.6, "f", "end"] });
+const GCUB = GG({ xmin: -1.5, xmax: 2.5, ymin: -3, ymax: 9, gy: 2, f: x => x * x * x, flab: [1.6, 7, "f", "end"] });
+const G3SQ = GG({ xmin: -1, xmax: 2.5, ymin: -1, ymax: 13, gy: 2, f: x => 3 * x * x, flab: [1.4, 11, "f", "end"] });
+const GHALF = GG({ xmin: -2.5, xmax: 5, ymin: -3, ymax: 8, f: x => 0.5 * x * x - 2 * x, flab: [4.8, 2.5, "f", "end"] });
+const GNEG = GG({ xmin: -2, xmax: 3.5, ymin: -6, ymax: 5, f: x => -x * x + 4, flab: [-1.9, 2, "f", "start"] });
+const GREC = GG({ xmin: -0.5, xmax: 5, ymin: -0.5, ymax: 4.5, f: x => 1 / x, dom: [0.21, 5], flab: [0.55, 3.5, "f", "start"] });
+const GSQZ = GG({ xmin: -0.5, xmax: 3, ymin: -1, ymax: 10, gy: 2, f: x => x * x, flab: [0.2, 8, "f", "start"] });
+const GX2 = GG({ xmin: -2, xmax: 5, ymin: -2, ymax: 26, gy: 5, f: x => x * x, flab: [-1.9, 21, "f(x) = x²", "start"] });
+const GBAL = GG({ xmin: 0, xmax: 32, ymin: 0, ymax: 700, gx: 5, gy: 100, data: BAL, xn: "t in min", yn: "h in m", dxn: "Δt", dyn: "Δh" });
+const GTEMP = GG({ xmin: 5, xmax: 21, ymin: 0, ymax: 18, gx: 2, gy: 2, data: TEMP, xn: "Uhrzeit in h", yn: "T in °C", dxn: "Δt", dyn: "ΔT" });
+const GSTONE = GG({ xmin: 0, xmax: 3.5, ymin: 0, ymax: 60, gx: 1, gy: 10, f: t => 5 * t * t, flab: [2.2, 45, "s", "end"], xn: "t in s", yn: "s in m", dxn: "Δt", dyn: "Δs" });
+
+const yOf = (g, x) => g.f ? g.f(x) : g.data.find(p => Math.abs(p[0] - x) < 1e-9)[1];
+
+const V = { g: GA, band: null, secs: [], cross: null, attempt: null, pts: [] };
+const ML = 46, MR = 44, MT = 36, MB = 40;
+function geo(g) {
+  const w = g.xmax - g.xmin, h = g.ymax - g.ymin;
+  let ux, uy;
+  if (g.gx === g.gy) { ux = uy = Math.min(380 / w, 400 / h); } else { ux = 380 / w; uy = 400 / h; }
+  return { ux, uy, W: ML + w * ux + MR, H: MT + h * uy + MB, X: x => ML + (x - g.xmin) * ux, Y: y => MT + (g.ymax - y) * uy };
+}
+const ln = (x1, y1, x2, y2, st) => '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" ' + st + '/>';
+const rq = v => (Math.abs(v - Math.round(v * 100) / 100) < 1e-9 ? " = " : " ≈ ") + fmt(v, 2);
+const tx = (x, y, s, st) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" ' + (st || "") + '>' + s + '</text>';
+
+function draw() {
+  const g = V.g, G = geo(g), X = G.X, Y = G.Y, svg = $("g");
+  svg.setAttribute("viewBox", "0 0 " + G.W.toFixed(0) + " " + G.H.toFixed(0));
+  let o = '<defs><clipPath id="cp"><rect x="' + X(g.xmin) + '" y="' + Y(g.ymax) + '" width="' + (X(g.xmax) - X(g.xmin)) + '" height="' + (Y(g.ymin) - Y(g.ymax)) + '"/></clipPath></defs>';
+  if (V.band) o += '<rect x="' + X(V.band.a) + '" y="' + Y(g.ymax) + '" width="' + (X(V.band.b) - X(V.band.a)) + '" height="' + (Y(g.ymin) - Y(g.ymax)) + '" fill="#fff4c2" opacity=".7"/>';
+  const hx = g.gx / 2, hy = g.gy / 2;
+  for (let k = Math.ceil(g.xmin / hx - 1e-9); k * hx <= g.xmax + 1e-9; k++) o += ln(X(k * hx), Y(g.ymin), X(k * hx), Y(g.ymax), 'stroke="' + (k % 2 === 0 ? "#c5cbd8" : "#e7e9f0") + '" stroke-width="1"');
+  for (let k = Math.ceil(g.ymin / hy - 1e-9); k * hy <= g.ymax + 1e-9; k++) o += ln(X(g.xmin), Y(k * hy), X(g.xmax), Y(k * hy), 'stroke="' + (k % 2 === 0 ? "#c5cbd8" : "#e7e9f0") + '" stroke-width="1"');
+  const ax = Math.max(g.ymin, Math.min(g.ymax, 0)), ay = Math.max(g.xmin, Math.min(g.xmax, 0));
+  const origin = ax === 0 && ay === 0;
+  o += ln(X(g.xmin), Y(ax), X(g.xmax) + 18, Y(ax), 'stroke="#222" stroke-width="2"');
+  o += '<polygon points="' + (X(g.xmax) + 26) + ',' + Y(ax) + ' ' + (X(g.xmax) + 14) + ',' + (Y(ax) - 6) + ' ' + (X(g.xmax) + 14) + ',' + (Y(ax) + 6) + '" fill="#222"/>';
+  o += ln(X(ay), Y(g.ymin), X(ay), Y(g.ymax) - 18, 'stroke="#222" stroke-width="2"');
+  o += '<polygon points="' + X(ay) + ',' + (Y(g.ymax) - 26) + ' ' + (X(ay) - 6) + ',' + (Y(g.ymax) - 14) + ' ' + (X(ay) + 6) + ',' + (Y(g.ymax) - 14) + '" fill="#222"/>';
+  for (let k = Math.ceil(g.xmin / g.gx - 1e-9); k * g.gx <= g.xmax + 1e-9; k++) {
+    const x = k * g.gx; if (Math.abs(x) < 1e-9 && origin) continue; if (Math.abs(x - ay) < 1e-9 && !origin) continue;
+    o += ln(X(x), Y(ax) - 4, X(x), Y(ax) + 4, 'stroke="#222" stroke-width="1.5"') + tx(X(x), Y(ax) + 19, fmt(x), 'font-size="14" text-anchor="middle"');
+  }
+  for (let k = Math.ceil(g.ymin / g.gy - 1e-9); k * g.gy <= g.ymax + 1e-9; k++) {
+    const y = k * g.gy; if (Math.abs(y) < 1e-9 && origin) continue;
+    o += ln(X(ay) - 4, Y(y), X(ay) + 4, Y(y), 'stroke="#222" stroke-width="1.5"') + tx(X(ay) - 7, Y(y) + 5, fmt(y), 'font-size="14" text-anchor="end"');
+  }
+  if (origin) o += tx(X(ay) - 6, Y(ax) + 18, "0", 'font-size="14" text-anchor="end"');
+  o += tx(X(g.xmax) + 22, Y(ax) + 34, g.xn, 'font-size="15" text-anchor="end" font-style="italic"');
+  o += tx(X(ay) + 10, Y(g.ymax) - 14, g.yn, 'font-size="15" font-style="italic"');
+  if (V.band) [V.band.a, V.band.b].forEach(x => { o += ln(X(x), Y(ax), X(x), Y(yOf(g, x)), 'stroke="#b08a00" stroke-width="2" stroke-dasharray="6 4" clip-path="url(#cp)"'); });
+  (g.asy || []).forEach(yy => { o += ln(X(g.xmin), Y(yy), X(g.xmax), Y(yy), 'stroke="#6a7385" stroke-width="1.5" stroke-dasharray="8 5"'); });
+  if (g.vline) o += ln(X(g.vline.x), Y(g.ymin), X(g.vline.x), Y(g.f(g.vline.x)), 'stroke="#555" stroke-width="4"') + tx(X(g.vline.x) + 6, Y(g.ymin) - 8, g.vline.lab, 'font-size="13" fill="#555"');
+  if (g.f) {
+    (g.doms || [g.dom || [g.xmin, g.xmax]]).forEach(dd => {
+      const d0 = dd[0], d1 = dd[1], pts = [];
+      for (let i = 0; i <= 400; i++) { const x = d0 + (d1 - d0) * i / 400; pts.push(X(x).toFixed(1) + "," + Y(g.f(x)).toFixed(1)); }
+      o += '<polyline clip-path="url(#cp)" points="' + pts.join(" ") + '" fill="none" stroke="var(--blue)" stroke-width="3.5"/>';
+    });
+    o += tx(X(g.flab[0]), Y(g.flab[1]), g.flab[2], 'font-size="18" fill="var(--blue)" font-weight="700" font-style="italic" text-anchor="' + g.flab[3] + '"');
+  } else {
+    o += '<polyline points="' + g.data.map(p => X(p[0]).toFixed(1) + "," + Y(p[1]).toFixed(1)).join(" ") + '" fill="none" stroke="var(--blue)" stroke-width="3"/>';
+    g.data.forEach(p => { o += '<circle cx="' + X(p[0]) + '" cy="' + Y(p[1]) + '" r="5" fill="var(--blue)"/>'; });
+  }
+  const ext = (g.xmax - g.xmin) * 0.1;
+  const all = V.secs.slice(); if (V.attempt) all.push(V.attempt);
+  all.forEach(s => {
+    const ya = yOf(g, s.a), yb = yOf(g, s.b), m = (yb - ya) / (s.b - s.a);
+    const col = s.grey ? "#8a90a0" : "var(--sec)";
+    o += '<g opacity="' + (s.faint ? 0.35 : 1) + '">';
+    o += ln(X(s.a - ext), Y(ya - m * ext), X(s.b + ext), Y(yb + m * ext), 'stroke="' + col + '" stroke-width="3" clip-path="url(#cp)"');
+    if (s.tri) {
+      o += '<path d="M' + X(s.a) + ',' + Y(ya) + ' L' + X(s.b) + ',' + Y(ya) + ' L' + X(s.b) + ',' + Y(yb) + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-dasharray="5 4"/>';
+      let below = m > 0 ? 22 : -8; if (m > 0 && Math.abs(Y(ya) - Y(ax)) < 26) below = -8;
+      o += tx(X((s.a + s.b) / 2), Y(ya) + below, g.dxn + rq(s.b - s.a), 'font-size="14" fill="' + col + '" text-anchor="middle" font-weight="600"');
+      o += tx(X(s.b) + 6, Y((ya + yb) / 2) + 5, g.dyn + rq(yb - ya), 'font-size="14" fill="' + col + '" font-weight="600"');
+    }
+    if (s.lab) o += tx(X((s.a + s.b) / 2) - 4, Y((ya + yb) / 2) - 8, s.lab, 'font-size="15" fill="' + col + '" font-weight="700" text-anchor="end"');
+    o += '<circle cx="' + X(s.a) + '" cy="' + Y(ya) + '" r="5.5" fill="' + col + '"/><circle cx="' + X(s.b) + '" cy="' + Y(yb) + '" r="5.5" fill="' + col + '"/></g>';
+  });
+  V.pts.forEach(p => {
+    o += '<circle cx="' + X(p.x) + '" cy="' + Y(yOf(g, p.x)) + '" r="7" fill="#d32f2f" stroke="#fff" stroke-width="2"/>';
+    o += tx(X(p.x) - 9, Y(yOf(g, p.x)) - 10, p.l, 'font-size="16" font-weight="700" fill="#d32f2f" text-anchor="end"');
+  });
+  if (V.cross) {
+    const c = V.cross;
+    o += ln(X(c.x), Y(ax), X(c.x), Y(c.y), 'stroke="#444" stroke-width="1.5" stroke-dasharray="3 3"') + ln(X(ay), Y(c.y), X(c.x), Y(c.y), 'stroke="#444" stroke-width="1.5" stroke-dasharray="3 3"');
+    o += '<circle cx="' + X(c.x) + '" cy="' + Y(c.y) + '" r="5" fill="none" stroke="#222" stroke-width="2"/>';
+  }
+  svg.innerHTML = o;
+}
+
+/* ================= Aufgaben-Bausteine ================= */
+const trend = m => m > 0 ? "Die Sekante steigt." : (m < 0 ? "Die Sekante fällt." : "Die Sekante verläuft waagrecht.");
+function dqWrong(v, ya, yb, a, b) {
+  const dy = yb - ya, dx = b - a, m = dy / dx, e = 1e-3;
+  if (dy !== 0 && Math.abs(v - dx / dy) < e) return "Du hast Δx durch Δy geteilt. Richtig ist: Δy geteilt durch Δx.";
+  if (m !== 0 && Math.abs(v + m) < e) return "Achte auf das Vorzeichen: Rechne f(b) − f(a), also „rechter Wert minus linker Wert“.";
+  if (dx !== 1 && Math.abs(v - dy) < e) return "Das ist Δy. Teile noch durch Δx = " + fmt(dx) + ".";
+  if (Math.abs(v - (yb + ya) / dx) < e) return "Im Zähler steht die Differenz f(b) − f(a), nicht die Summe.";
+  if (Math.abs(v - m) < 0.07) return "Fast! Runde auf zwei Nachkommastellen oder gib einen Bruch an (z. B. 5/3).";
+  return null;
+}
+const dq = (fa, fb, a, b) => frac("f(" + fmt(b) + ") − f(" + fmt(a) + ")", fmt(b) + " − " + par(a));
+
+// Ablesen am Graphen; steps=true: mit Zwischenschritten f(a), f(b)
+function readT(g, a, b, steps, extra) {
+  const ya = g.f(a), yb = g.f(b), m = (yb - ya) / (b - a);
+  const mf = { lab: "mittlere Änderungsrate =", ans: m, tol: 1e-3, wrong: v => dqWrong(v, ya, yb, a, b) };
+  return {
+    g, band: { a, b }, pts: steps ? [{ x: a, l: "A" }, { x: b, l: "B" }] : [],
+    text: "Bestimme die mittlere Änderungsrate von f im Intervall <b>[" + fmt(a) + "; " + fmt(b) + "]</b>. Lies die Funktionswerte am Graphen ab" + (steps ? " (Punkte A und B)." : "."),
+    fields: steps ? [
+      { lab: "f(" + fmt(a) + ") =", ans: ya, tol: 0.01, wrong: () => "Geh bei x = " + fmt(a) + " senkrecht zum Graphen (Punkt A) und lies den y-Wert ab." },
+      { lab: "f(" + fmt(b) + ") =", ans: yb, tol: 0.01, wrong: () => "Geh bei x = " + fmt(b) + " senkrecht zum Graphen (Punkt B) und lies den y-Wert ab." }, mf] : [mf],
+    tip: "Lies f(" + fmt(a) + ") und f(" + fmt(b) + ") ab. Dann: " + dq(0, 0, a, b) + ". Tippe in den Graphen, um Werte abzulesen.",
+    ok: "Richtig: " + dq(0, 0, a, b) + " = " + frac(fmt(yb) + " − " + par(ya), fmt(b) + " − " + par(a)) + " = <b>" + fmt(m) + "</b>. " + trend(m) + (extra || ""),
+    res: "[" + fmt(a) + "; " + fmt(b) + "]: " + frac(fmt(yb) + " − " + par(ya), fmt(b - a)) + " = " + fmt(m),
+    sec: { a, b }
+  };
+}
+// Rechnerisch mit Term: tm = {g, term, ins}
+function calcT(tm, a, b, extra) {
+  const f = tm.g.f, ya = f(a), yb = f(b), m = (yb - ya) / (b - a);
+  const ein = x => "f(" + fmt(x) + ") = " + tm.ins(x) + " = " + fmt(f(x));
+  return {
+    g: tm.g, band: { a, b },
+    text: "f(x) = " + tm.term + ". Berechne die mittlere Änderungsrate von f im Intervall <b>[" + fmt(a) + "; " + fmt(b) + "]</b>.",
+    fields: [
+      { lab: "f(" + fmt(a) + ") =", ans: ya, tol: 1e-3, wrong: () => "Setze x = " + fmt(a) + " ein: " + tm.ins(a) + ". Achte auf Klammern und Vorzeichen." },
+      { lab: "f(" + fmt(b) + ") =", ans: yb, tol: 1e-3, wrong: () => "Setze x = " + fmt(b) + " ein: " + tm.ins(b) + ". Achte auf Klammern und Vorzeichen." },
+      { lab: "mittlere Änderungsrate =", ans: m, tol: 1e-3, wrong: v => dqWrong(v, ya, yb, a, b) }],
+    tip: "f(" + fmt(a) + ") = " + tm.ins(a) + " = …<br>Dann: " + dq(0, 0, a, b),
+    ok: "Richtig! " + ein(a) + " und " + ein(b) + ".<br>" + frac(fmt(yb) + " − " + par(ya), fmt(b) + " − " + par(a)) + " = " + frac(fmt(yb - ya), fmt(b - a)) + " = <b>" + fmt(m) + "</b>. " + trend(m) + (extra || ""),
+    res: "f(x) = " + tm.term + ", [" + fmt(a) + "; " + fmt(b) + "]: " + fmt(m),
+    sec: { a, b }
+  };
+}
+const T = {
+  sq: { g: GSQ, term: "x²", ins: x => par(x) + "²" },
+  lin: { g: GLIN, term: "2x + 1", ins: x => "2 · " + par(x) + " + 1" },
+  cub: { g: GCUB, term: "x³", ins: x => par(x) + "³" },
+  sq3: { g: G3SQ, term: "3x²", ins: x => "3 · " + par(x) + "²" },
+  c: { g: GC, term: "x³ − 3x", ins: x => par(x) + "³ − 3 · " + par(x) },
+  half: { g: GHALF, term: "0,5x² − 2x", ins: x => "0,5 · " + par(x) + "² − 2 · " + par(x) },
+  neg: { g: GNEG, term: "−x² + 4", ins: x => "−" + par(x) + "² + 4" },
+  rec: { g: GREC, term: "1/x", ins: x => "1 : " + par(x) },
+  sqz: { g: GSQZ, term: "x²", ins: x => par(x) + "²" }
+};
+// Sachkontext Tabelle/Diagramm
+function ctxT(g, a, b, unit, steps, extra) {
+  const ya = yOf(g, a), yb = yOf(g, b), m = (yb - ya) / (b - a);
+  const xu = unit.split("/")[1], yu = unit.split("/")[0];
+  const mf = { lab: "mittlere Änderungsrate =", unit, ans: m, tol: 0.006, wrong: v => {
+    if (Math.abs(v - (yb - ya)) < 1e-3) return "Das ist die Änderung " + g.dyn + ". Teile noch durch " + g.dxn + " = " + fmt(b - a) + " " + xu + ".";
+    return dqWrong(v, ya, yb, a, b);
+  } };
+  const fields = steps ? [
+    { lab: g.dyn + " =", unit: yu, ans: yb - ya, tol: 1e-3, wrong: v => Math.abs(v + yb - ya) < 1e-3 ? g.dyn + " = späterer Wert minus früherer Wert: " + yb + " − " + par(ya) + "." : "Lies die Werte bei " + a + " und " + b + " ab und bilde die Differenz: späterer minus früherer Wert." },
+    { lab: g.dxn + " =", unit: xu, ans: b - a, tol: 1e-3, wrong: () => g.dxn + " ist die Länge des Zeitraums: " + b + " − " + a + "." }, mf] : [mf];
+  return {
+    g, band: { a, b },
+    text: "Berechne die mittlere Änderungsrate im Zeitraum <b>" + (g === GTEMP ? "von " + a + " bis " + b + " Uhr" : "[" + a + " " + xu + "; " + b + " " + xu + "]") + "</b>." + (steps ? "" : " Runde, falls nötig, auf zwei Nachkommastellen."),
+    fields,
+    tip: frac(g.dyn, g.dxn) + " = " + frac("Wert bei " + b + " − Wert bei " + a, b + " − " + a),
+    ok: "Richtig: " + frac(yb + " " + yu + " − " + par(ya) + " " + yu, b + " " + xu + " − " + a + " " + xu) + " = " + frac(fmt(yb - ya), fmt(b - a)) + (Math.abs(m - Math.round(m * 100) / 100) < 1e-9 ? " = " : " ≈ ") + "<b>" + fmt(m, 2) + " " + unit + "</b>." + (extra || ""),
+    res: "[" + a + "; " + b + "]: " + fmt(m, 2) + " " + unit,
+    sec: { a, b }
+  };
+}
+
+/* ================= Aufgabensammlung: AUF[teil][niveau] ================= */
+const AUF = [
+  [ // Teil 1: Am Graphen
+    [readT(GA, 0, 1, true), readT(GA, 3, 4, true), readT(GA, 1, 4, true), readT(GA, 2, 4, true, " Vergleiche mit [1; 4]: andere Intervalle, andere Sekanten.")],
+    [readT(GB, 0, 2, false), readT(GB, 2, 4, false), readT(GB, -1, 3, false, "<br>Gleiches Ergebnis wie in a): Die Sekanten sind <b>parallel</b>."), readT(GB, 1, 4, false),
+     { g: GB, text: "In welchem Intervall ist die mittlere Änderungsrate von f <b>am größten</b>? Vergleiche die Steilheit der Sekanten. Tippe an.",
+       mc: [["[−1; 1]", null], ["[0; 2]", "In [0; 2] ist sie 1. Es gibt eine steilere Sekante.", { a: 0, b: 2 }], ["[1; 3]", "In [1; 3] ist sie 0 (f(1) = f(3)).", { a: 1, b: 3 }], ["[−1; 3]", "In [−1; 3] ist sie 1. Es gibt eine steilere Sekante.", { a: -1, b: 3 }]],
+       ok: "Richtig: " + frac("2,5 − (−1,5)", "1 − (−1)") + " = <b>2</b>. Die Sekante in [−1; 1] ist am steilsten.", res: "Größte mittlere Änderungsrate: [−1; 1] mit 2", sec: { a: -1, b: 1 } }],
+    [{ g: GB, kind: "tap1", xa: 1, target: 0, pts: [{ x: 1, l: "A" }],
+       text: "A(1 | 2,5) liegt fest. <b>Tippe auf den Graphen</b> und wähle B so, dass die Sekante AB <b>waagrecht</b> ist (mittlere Änderungsrate 0).",
+       tip: "Waagrecht heißt: B hat denselben y-Wert wie A." },
+     { g: GB, kind: "tap1", xa: 1, target: -1, pts: [{ x: 1, l: "A" }],
+       text: "A(1 | 2,5) liegt fest. Tippe auf den Graphen und wähle B so, dass die mittlere Änderungsrate zwischen A und B genau <b>−1</b> ist.",
+       tip: "Die Sekante muss fallen: Geh von A aus 1 nach rechts, dann 1 nach unten – und so weiter, bis du den Graphen triffst." },
+     { g: GB, kind: "tap2", target: 1,
+       text: "Wähle selbst <b>zwei Punkte</b> A und B auf dem Graphen (nacheinander antippen), sodass die mittlere Änderungsrate genau <b>1</b> ist.",
+       tip: "Steigung 1: 1 nach rechts, 1 nach oben. Lege ein Lineal mit dieser Steigung auf den Graphen und verschiebe es." },
+     { g: GB, sec0: { a: 1, b: 3 },
+       text: "Die mittlere Änderungsrate von f in [1; 3] ist 0. Welche Aussage ist <b>richtig</b>?",
+       mc: [["f ist zwischen x = 1 und x = 3 konstant.", "Schau auf den Graphen: f steigt bis x = 2 und fällt danach. Gegenbeispiel!"],
+            ["f(1) = f(3)", null],
+            ["Der Graph hat zwischen 1 und 3 nirgends eine Steigung.", "Die mittlere Änderungsrate ist nur ein Durchschnitt – dazwischen steigt und fällt der Graph."],
+            ["Der Graph schneidet zwischen 1 und 3 die x-Achse.", "Die mittlere Änderungsrate sagt nichts über Nullstellen aus. Schau auf den Graphen."]],
+       ok: "Richtig: " + frac("f(3) − f(1)", "3 − 1") + " = 0 bedeutet nur f(3) − f(1) = 0, also f(1) = f(3). Über den Verlauf dazwischen sagt das nichts!",
+       res: "Mittlere Änderungsrate 0 bedeutet nur f(a) = f(b), nicht „f ist konstant“." }]
+  ],
+  [ // Teil 2: Rechnerisch
+    [calcT(T.sq, 1, 3), calcT(T.sq, -2, 0), calcT(T.lin, 0, 3, "<br>Bei einer Geraden ist die mittlere Änderungsrate in jedem Intervall gleich der Steigung 2."), calcT(T.cub, 0, 2), calcT(T.sq3, 1, 2)],
+    [calcT(T.c, 0, 2), calcT(T.c, -1, 1), calcT(T.c, 1, 1.5), calcT(T.half, -2, 2), calcT(T.neg, -1, 3)],
+    [calcT(T.rec, 1, 4), calcT(T.sqz, 2, 2.1),
+     { g: GSQZ, sec0: { a: 2, b: 2.5 },
+       text: "f(x) = x². Welcher Term ist der Differenzenquotient im Intervall <b>[2; 2 + h]</b> (h &gt; 0)?",
+       tip: "(2 + h)² = 4 + 4h + h². Teile f(2 + h) − f(2) durch h. Kontrolle: Für h = 0,1 muss 4,1 herauskommen.",
+       mc: [["4h + h²", "Das ist nur der Zähler f(2 + h) − f(2). Teile noch durch h."], ["4 + h", null],
+            ["4", "4 erhält man nur, wenn h fast 0 ist. Für h = 0,1 kam in b) aber 4,1 heraus."], ["4 + h²", "Setze h = 0,1 ein: Du erhältst 4,01 – in b) kam aber 4,1 heraus."]],
+       ok: "Richtig: " + frac("(2 + h)² − 2²", "h") + " = " + frac("4h + h²", "h") + " = <b>4 + h</b>. Für h = 0,1 ergibt das 4,1 – wie in b).",
+       res: "x² in [2; 2 + h]: Differenzenquotient 4 + h" },
+     { g: GX2, kind: "iv", target: 4, sol: [1, 3],
+       text: "f(x) = x². Finde ein Intervall [a; b], in dem die mittlere Änderungsrate <b>genau 4</b> ist. Probiere aus!",
+       tip: "Probiere z. B. a = 1 und verändere b. Die graue Sekante zeigt deinen Versuch." },
+     { g: GX2, kind: "iv", target: 4, sol: [0, 4],
+       text: "Finde ein <b>zweites, anderes</b> Intervall [a; b] mit der mittleren Änderungsrate 4.",
+       tip: "Nimm ein anderes a als vorher, z. B. a = 0 oder a = −1." },
+     { g: GX2,
+       text: "Vergleiche deine beiden Intervalle. Welchen Wert hat <b>a + b</b> jeweils?",
+       fields: [{ lab: "a + b =", ans: 4, tol: 1e-6, wrong: () => "Rechne a + b für eines deiner Intervalle aus." }],
+       tip: "Schau in „Deine Ergebnisse“.",
+       ok: "Genau! Für f(x) = x² gilt " + frac("b² − a²", "b − a") + " = " + frac("(b − a)(b + a)", "b − a") + " = a + b (3. binomische Formel). Alle Sekanten mit der Steigung 4 sind parallel.",
+       res: "Für f(x) = x² ist die mittlere Änderungsrate in [a; b] gleich a + b." }]
+  ],
+  [ // Teil 3: Sachkontext
+    [ctxT(GBAL, 0, 10, "m/min", true, " Der Ballon steigt in diesen 10 Minuten im Mittel um 40 m pro Minute."), ctxT(GBAL, 10, 20, "m/min", true), ctxT(GBAL, 20, 30, "m/min", true, " Negativ: Der Ballon sinkt."),
+     { g: GBAL, sec0: { a: 20, b: 30 },
+       text: "Was bedeutet die mittlere Änderungsrate <b>−15 m/min</b> im Zeitraum [20 min; 30 min]? Tippe an.",
+       mc: [["Der Ballon sinkt in jeder Minute genau 15 m.", "Nicht ganz: Die mittlere Änderungsrate ist ein <b>Durchschnitt</b>. Wie schnell er in einzelnen Minuten sinkt, wissen wir nicht."],
+            ["Der Ballon sinkt in diesem Zeitraum im Mittel um 15 m pro Minute.", null],
+            ["Der Ballon befindet sich 15 m unter dem Startplatz.", "Die Änderungsrate sagt nichts über die Höhe selbst aus, sondern wie sich die Höhe ändert."],
+            ["Der Ballon ist nach 30 min um 15 m tiefer als nach 20 min.", "In 10 Minuten sinkt er insgesamt um 150 m. −15 m gilt pro Minute."]],
+       ok: "Richtig! Negatives Vorzeichen: Die Höhe nimmt ab. „Im Mittel“: Es ist ein Durchschnittswert.",
+       res: "−15 m/min: Der Ballon sinkt im Mittel um 15 m pro Minute." }],
+    [ctxT(GTEMP, 6, 12, "°C/h", false), ctxT(GTEMP, 14, 20, "°C/h", false, " Am Abend kühlt es im Mittel um etwa 1,17 °C pro Stunde ab."),
+     { g: GTEMP,
+       text: "In welchem 2-Stunden-Zeitraum steigt die Temperatur im Mittel <b>am stärksten</b>? Tippe an.",
+       mc: [["6 bis 8 Uhr", "Hier steigt sie im Mittel um 2 °C : 2 h = 1 °C/h.", { a: 6, b: 8 }], ["10 bis 12 Uhr", null],
+            ["12 bis 14 Uhr", "Hier steigt sie im Mittel um 2 °C : 2 h = 1 °C/h.", { a: 12, b: 14 }], ["14 bis 16 Uhr", "Hier sinkt sie sogar: −1 °C : 2 h = −0,5 °C/h.", { a: 14, b: 16 }]],
+       ok: "Richtig: " + frac("14 °C − 10 °C", "2 h") + " = <b>2 °C/h</b>. Dort ist die Strecke im Diagramm am steilsten.",
+       res: "Stärkster Anstieg: 10 bis 12 Uhr mit 2 °C/h", sec: { a: 10, b: 12 } },
+     { g: GTEMP, sec0: { a: 6, b: 20 },
+       text: "Von 6 bis 20 Uhr beträgt die mittlere Änderungsrate " + frac("5", "14") + " °C/h ≈ 0,36 °C/h. Welche Aussage folgt daraus <b>sicher</b>?",
+       mc: [["Um 20 Uhr ist es 5 °C wärmer als um 6 Uhr.", null],
+            ["Die Temperatur steigt den ganzen Tag über.", "Nein – ab 14 Uhr sinkt sie. Die mittlere Änderungsrate vergleicht nur Anfang und Ende."],
+            ["Die Temperatur steigt in jeder Stunde um 0,36 °C.", "Das wäre nur bei gleichmäßiger Änderung so. 0,36 °C/h ist ein Durchschnitt."],
+            ["Um 13 Uhr ist es am wärmsten.", "Darüber sagt die mittlere Änderungsrate nichts aus."]],
+       ok: "Richtig: 0,36 °C/h · 14 h = 5 °C, also T(20) − T(6) = 5 °C. Mehr verrät die mittlere Änderungsrate nicht!",
+       res: "0,36 °C/h von 6 bis 20 Uhr: nur T(20) − T(6) = 5 °C ist sicher." }],
+    [{ g: GSTONE, band: { a: 1, b: 3 }, sec: { a: 1, b: 3 },
+       text: "Ein Stein fällt von einer Brücke. Nach t Sekunden ist er s(t) = 5t² Meter gefallen. Berechne seine <b>mittlere Geschwindigkeit</b> im Zeitraum [1 s; 3 s].",
+       fields: [{ lab: "mittlere Geschwindigkeit =", unit: "m/s", ans: 20, tol: 1e-3, wrong: v => dqWrong(v, 5, 45, 1, 3) }],
+       tip: frac("s(3) − s(1)", "3 − 1") + " mit s(3) = 5 · 3² und s(1) = 5 · 1²",
+       ok: "Richtig: " + frac("45 m − 5 m", "2 s") + " = <b>20 m/s</b>.", res: "Stein in [1; 3]: 20 m/s" },
+     { g: GSTONE, band: { a: 2, b: 2.1 }, sec: { a: 2, b: 2.1 },
+       text: "Berechne die mittlere Geschwindigkeit des Steins im kurzen Zeitraum <b>[2 s; 2,1 s]</b>.",
+       fields: [{ lab: "mittlere Geschwindigkeit =", unit: "m/s", ans: 20.5, tol: 1e-3, wrong: v => dqWrong(v, 20, 22.05, 2, 2.1) }],
+       tip: "s(2,1) = 5 · 2,1² = 5 · 4,41 = …",
+       ok: "Richtig: " + frac("22,05 m − 20 m", "0,1 s") + " = <b>20,5 m/s</b>. Das ist schon fast die Geschwindigkeit genau bei t = 2 s.", res: "Stein in [2; 2,1]: 20,5 m/s" },
+     { g: GSTONE, sec: { a: 0, b: 3 },
+       text: "Nach wie vielen Sekunden b beträgt die mittlere Geschwindigkeit im Zeitraum <b>[0 s; b]</b> genau <b>15 m/s</b>?",
+       fields: [{ lab: "b =", unit: "s", ans: 3, tol: 1e-3, wrong: v => Math.abs(v - 15) < 1e-6 ? "15 m/s ist die Geschwindigkeit. Gesucht ist die Zeit b." : "Stelle den Differenzenquotienten auf: " + frac("5b² − 0", "b − 0") + " = 5b. Löse 5b = 15." }],
+       tip: frac("s(b) − s(0)", "b − 0") + " = " + frac("5b²", "b") + " = 5b",
+       ok: "Richtig: " + frac("5b²", "b") + " = 5b = 15 ⇒ <b>b = 3 s</b>. Probe: " + frac("45 m", "3 s") + " = 15 m/s.", res: "Mittlere Geschwindigkeit 15 m/s in [0; 3]" },
+     { g: GSTONE,
+       text: "K(x) gibt die Kosten in € für die Herstellung von x Stück an. Welche <b>Einheit</b> hat die mittlere Änderungsrate von K?",
+       mc: [["€", "€ ist die Einheit von K selbst. Die Änderungsrate ist „Einheit von y pro Einheit von x“."], ["Stück/€", "Andersherum: Einheit von y geteilt durch Einheit von x."], ["€/Stück", null], ["€ · Stück", "Beim Differenzenquotienten wird geteilt, nicht multipliziert."]],
+       ok: "Richtig: " + frac("ΔK", "Δx") + " hat die Einheit " + frac("€", "Stück") + " – die durchschnittlichen Mehrkosten pro zusätzlichem Stück.", res: "Kosten K(x): Einheit €/Stück" },
+     { g: GSTONE,
+       text: "Ein Auto fährt 120 km in 1,5 h, also im Mittel 80 km/h. Kann es unterwegs <b>schneller als 80 km/h</b> gefahren sein?",
+       mc: [["Nein, es fuhr immer genau 80 km/h.", "Das wäre nur bei völlig gleichmäßiger Fahrt so. Denk an Ampeln oder Ortsdurchfahrten."], ["Nein, 80 km/h ist die Höchstgeschwindigkeit.", "Der Mittelwert liegt zwischen dem kleinsten und dem größten Wert."],
+            ["Ja – 80 km/h ist nur der Mittelwert. Wenn es zeitweise langsamer war, muss es zeitweise auch schneller gewesen sein.", null], ["Das lässt sich nur mit einem Taschenrechner entscheiden.", "Überlege ohne Rechnung: Was bedeutet „im Mittel“?"]],
+       ok: "Richtig! Die mittlere Änderungsrate verrät nichts über einzelne Momente – dafür braucht man die <b>momentane</b> Änderungsrate (kommt als Nächstes!).", res: "80 km/h im Mittel: zeitweise schneller oder langsamer möglich." }]
+  ]
+];
+/* ================= Teil 4: Abituraufgaben Bayern (nur mittlere Änderungsrate) ================= */
+const fPol = t => 3 * t * t - 60 * t + 500;
+const fSeilU = x => 0.34 * x * x + 0.15 * x + 1.16, fSeilO = x => 0.2 * x * x - 0.5 * x + 1.95;
+const GPOL = GG({ xmin: 0, xmax: 10.5, ymin: 0, ymax: 550, gx: 1, gy: 100, f: fPol, flab: [6.2, 300, "n", "start"], xn: "t in h", yn: "n", dxn: "Δt", dyn: "Δn" });
+const GSEIL = GG({ xmin: 0, xmax: 4.5, ymin: 0, ymax: 3.5, f: x => x <= 1 ? fSeilU(x) : fSeilO(x), dom: [0, 4], flab: [2.3, 2.6, "Seil", "start"], xn: "x in km", yn: "y in km", vline: { x: 1, lab: "Seilstütze" } });
+const GILL = GG({ xmin: -4, xmax: 5, ymin: -2, ymax: 6, f: x => 5 - 9 / (2 * x * x), doms: [[-4, -0.8], [0.8, 5]], asy: [5], flab: [4.7, 4.1, "f", "end"] });
+const G24 = GG({ xmin: -4, xmax: 4, ymin: -1, ymax: 5, f: x => 4 / (1 + Math.exp(x)), asy: [4], flab: [-3.6, 4.5, "f", "start"] });
+const GWAS = GG({ xmin: 0, xmax: 100, ymin: 0, ymax: 30, gx: 10, gy: 5, f: t => 25 - 20 * Math.exp(-0.014 * t), asy: [25], flab: [55, 21.5, "f", "start"], xn: "t in min", yn: "T in °C", dxn: "Δt", dyn: "ΔT" });
+const G13 = GG({ xmin: -3, xmax: 3, ymin: -1.5, ymax: 1.5, gx: 0.5, gy: 0.5, f: x => 2 * x * Math.exp(-0.5 * x * x), flab: [2.9, 0.65, "f", "end"] });
+const POLTXT = "An einer Messstation wurde 10 Stunden lang die Anzahl der Pollen in einem Kubikmeter Luft ermittelt. Sie wird durch <b>n(t) = 3t² − 60t + 500</b> beschrieben (t in Stunden nach Beginn der Messung).<br>";
+const SEILTXT = "Eine Seilbahn führt von der Talstation (x = 0) über eine Seilstütze (x = 1) zur Bergstation (x = 4). x ist die horizontale Entfernung von der Talstation in km, y die Höhe über dem Meeresspiegel in km.<br>";
+const AUF4 = [
+  [ // ★
+    { g: GPOL, band: { a: 0, b: 2 }, sec: { a: 0, b: 2 }, src: "Abitur Bayern 2017 · Prüfungsteil A · Analysis, Aufgabe 4a",
+      text: POLTXT + "Bestimme die <b>mittlere Änderungsrate</b> der Anzahl der Pollen in einem Kubikmeter Luft während der <b>ersten beiden Stunden</b> der Messung.",
+      fields: [{ lab: "n(0) =", ans: 500, tol: 1e-6, wrong: () => "Setze t = 0 ein: 3 · 0² − 60 · 0 + 500." },
+               { lab: "n(2) =", ans: 392, tol: 1e-6, wrong: () => "Setze t = 2 ein: 3 · 2² − 60 · 2 + 500 = 12 − 120 + 500." },
+               { lab: "mittlere Änderungsrate =", unit: "pro h", ans: -54, tol: 1e-6, wrong: v => dqWrong(v, 500, 392, 0, 2) }],
+      tip: frac("n(2) − n(0)", "2 − 0"),
+      ok: "Richtig: " + frac("n(2) − n(0)", "2 − 0") + " = " + frac("392 − 500", "2") + " = <b>−54</b>. Die Anzahl der Pollen pro m³ nimmt in den ersten beiden Stunden im Mittel um 54 pro Stunde ab.",
+      res: "Pollen in [0; 2]: −54 pro m³ und Stunde" },
+    { g: GPOL, sec0: { a: 0, b: 2 }, src: "Zusatzfrage zur Abituraufgabe 2017",
+      text: "Welche Aussage beschreibt das Ergebnis <b>−54</b> aus a) richtig?",
+      mc: [["Nach 2 Stunden sind nur noch 54 Pollen in einem Kubikmeter Luft.", "Nein: n(2) = 392. −54 beschreibt eine Änderung pro Stunde, keinen Bestand."],
+           ["In den ersten zwei Stunden nimmt die Anzahl der Pollen pro m³ im Mittel um 54 pro Stunde ab.", null],
+           ["Die Anzahl der Pollen nimmt in jeder der beiden Stunden genau um 54 ab.", "Rechne nach: In der 1. Stunde sind es 57 weniger (500 → 443), in der 2. Stunde 51 weniger (443 → 392). −54 ist der Mittelwert."],
+           ["In den zwei Stunden nimmt die Anzahl der Pollen pro m³ insgesamt um 54 ab.", "Insgesamt sind es 500 − 392 = 108. −54 gilt pro Stunde."]],
+      ok: "Richtig! In der 1. Stunde sind es übrigens 57 Pollen weniger, in der 2. Stunde 51 – im Mittel also 54 pro Stunde.",
+      res: "−54: im Mittel 54 Pollen pro m³ und Stunde weniger" },
+    { g: GSEIL, band: { a: 0, b: 1 }, src: "Abitur Bayern 2024 (CAS) · Prüfungsteil B · Analysis, Aufgabengruppe 1, Aufgabe 1a",
+      text: SEILTXT + "Im unteren Abschnitt wird der Seilverlauf durch <b>f(x) = 0,34x² + 0,15x + 1,16</b> mit 0 ≤ x ≤ 1 beschrieben. Berechne den <b>Höhenunterschied</b>, den die Seilbahn im unteren Abschnitt überwindet.",
+      fields: [{ lab: "f(0) =", unit: "km", ans: 1.16, tol: 1e-6, wrong: () => "Setze x = 0 ein." },
+               { lab: "f(1) =", unit: "km", ans: 1.65, tol: 1e-6, wrong: () => "Setze x = 1 ein: 0,34 + 0,15 + 1,16." },
+               { lab: "Höhenunterschied =", unit: "m", ans: 490, tol: 1e-6, wrong: v => Math.abs(v - 0.49) < 1e-6 ? "0,49 km stimmt – gib das Ergebnis in Metern an." : "Höhenunterschied = f(1) − f(0)." }],
+      tip: "Höhenunterschied = f(1) − f(0). 1 km = 1000 m.",
+      ok: "Richtig: f(1) − f(0) = 1,65 km − 1,16 km = 0,49 km = <b>490 m</b>.", res: "Seilbahn unten: Höhenunterschied 490 m" },
+    { g: GSEIL, band: { a: 0, b: 1 }, sec: { a: 0, b: 1 }, src: "Zusatzfrage zur Abituraufgabe 2024",
+      text: "Gib die <b>mittlere Steigung</b> des Seils im unteren Abschnitt in Prozent an.",
+      fields: [{ lab: "mittlere Steigung =", unit: "%", ans: 49, alt: [0.49], tol: 1e-6, wrong: v => Math.abs(v - 490) < 1e-6 ? "Rechne beide Größen in derselben Einheit: 0,49 km Höhe auf 1 km horizontale Strecke." : "Mittlere Steigung = " + frac("Δy", "Δx") + " = " + frac("0,49 km", "1 km") + "." }],
+      tip: frac("f(1) − f(0)", "1 − 0") + "; 0,01 = 1 %",
+      ok: "Richtig: " + frac("0,49", "1") + " = 0,49 = <b>49 %</b>. Auf 100 m horizontaler Strecke steigt das Seil im Mittel um 49 m.", res: "Seilbahn unten: mittlere Steigung 49 %" }
+  ],
+  [ // ★★
+    { g: GILL, band: { a: 1, b: 3 }, sec: { a: 1, b: 3 }, src: "ISB, Illustrierende Prüfungsaufgaben Abitur ab 2026 · Kolloquium, Beispiel 3, Aufgabe 2b",
+      text: "Die Abbildung zeigt den Graphen der Funktion f mit f(x) = 5 − " + frac("9", "2x²") + " (x ≠ 0). Ermittle <b>mithilfe der Abbildung</b> die mittlere Änderungsrate von f im Intervall <b>[1; 3]</b>.",
+      fields: [{ lab: "mittlere Änderungsrate =", ans: 2, tol: 1e-6, wrong: v => dqWrong(v, 0.5, 4.5, 1, 3) || "Lies f(1) und f(3) am Graphen ab (tippe in den Graphen)." }],
+      tip: "Lies f(1) und f(3) ab. Dann " + frac("f(3) − f(1)", "3 − 1") + ".",
+      ok: "Richtig: " + frac("4,5 − 0,5", "3 − 1") + " = <b>2</b>.", res: "f(x) = 5 − 9/(2x²) in [1; 3]: 2" },
+    { g: GPOL, band: { a: 8, b: 10 }, sec: { a: 8, b: 10 }, src: "Zusatzfrage zur Abituraufgabe 2017 (Pollen)",
+      text: POLTXT + "Bestimme die mittlere Änderungsrate der Anzahl der Pollen in einem Kubikmeter Luft in den <b>letzten beiden Stunden</b> der Messung.",
+      fields: [{ lab: "mittlere Änderungsrate =", unit: "pro h", ans: -6, tol: 1e-6, wrong: v => dqWrong(v, 212, 200, 8, 10) || "Berechne n(8) und n(10) und bilde den Differenzenquotienten." }],
+      tip: frac("n(10) − n(8)", "10 − 8") + " mit n(8) = 3 · 8² − 60 · 8 + 500",
+      ok: "Richtig: " + frac("200 − 212", "2") + " = <b>−6</b>. Am Anfang −54, am Ende nur noch −6: Die Abnahme wird deutlich schwächer.", res: "Pollen in [8; 10]: −6 pro m³ und Stunde" },
+    { g: GSEIL, band: { a: 1, b: 4 }, sec: { a: 1, b: 4 }, src: "Abitur Bayern 2024 (CAS) · Prüfungsteil B · Analysis, Aufgabengruppe 1, Aufgabe 1d",
+      text: SEILTXT + "Im oberen Abschnitt (1 ≤ x ≤ 4) gilt <b>g(x) = 0,2x² − 0,5x + 1,95</b>. Ermittle die <b>mittlere Steigung</b> des Seilverlaufs im oberen Abschnitt.",
+      fields: [{ lab: "mittlere Steigung =", unit: "(Dezimalzahl oder %)", ans: 0.5, alt: [50], tol: 1e-6, wrong: v => dqWrong(v, 1.65, 3.15, 1, 4) || "Berechne g(1) und g(4) und bilde " + frac("g(4) − g(1)", "4 − 1") + "." }],
+      tip: "g(1) = 0,2 − 0,5 + 1,95 = …; g(4) = 0,2 · 16 − 2 + 1,95 = …",
+      ok: "Richtig: " + frac("3,15 − 1,65", "4 − 1") + " = " + frac("1,5", "3") + " = <b>0,5 = 50 %</b>.", res: "Seilbahn oben: mittlere Steigung 50 %" },
+    { g: GSEIL, sec0: { a: 1, b: 4 }, src: "Zusatzfrage zur Abituraufgabe 2024",
+      text: "Was bedeutet die mittlere Steigung von <b>50 %</b> im oberen Abschnitt?",
+      mc: [["Das Seil hat an jeder Stelle des oberen Abschnitts die Steigung 50 %.", "Nein – die Abbildung zeigt: Das Seil wird nach oben hin steiler. 50 % ist ein Mittelwert."],
+           ["Auf 3 km horizontaler Strecke gewinnt die Bahn insgesamt 1,5 km an Höhe.", null],
+           ["Die Bergstation liegt 50 % höher als die Seilstütze.", "3,15 km ist etwa 91 % mehr als 1,65 km. Die Steigung vergleicht Höhengewinn und horizontale Strecke."],
+           ["Das Seil ist im Mittel um 50° geneigt.", "50 % heißt: 50 m Höhe auf 100 m Strecke. Das entspricht etwa 27°, nicht 50°."]],
+      ok: "Richtig: 0,5 · 3 km = 1,5 km Höhengewinn (von 1,65 km auf 3,15 km).", res: "50 %: 1,5 km Höhengewinn auf 3 km horizontale Strecke" }
+  ],
+  [ // ★★★
+    { g: G24, band: { a: -1, b: 1 }, sec: { a: -1, b: 1 }, src: "Abitur Bayern 2024 · Prüfungsteil B · Analysis, Aufgabengruppe 2, Aufgabe 1b",
+      text: "Die Abbildung zeigt den Graphen der Funktion f mit f(x) = " + frac("4", "1 + eˣ") + ". Berechne die <b>mittlere Steigung</b> des Graphen von f im Bereich <b>−1 ≤ x ≤ 1</b> auf Hundertstel genau.",
+      fields: [{ lab: "mittlere Steigung ≈", ans: (4 / (1 + Math.E) - 4 / (1 + 1 / Math.E)) / 2, tol: 0.006, wrong: v => dqWrong(v, 4 / (1 + 1 / Math.E), 4 / (1 + Math.E), -1, 1) || "Berechne f(1) und f(−1) mit der eˣ-Taste des Taschenrechners." }],
+      tip: "f(1) = 4 : (1 + e¹), f(−1) = 4 : (1 + e⁻¹). Taschenrechner: eˣ-Taste (e ≈ 2,718).",
+      ok: "Richtig: " + frac("f(1) − f(−1)", "1 − (−1)") + " ≈ " + frac("1,076 − 2,924", "2") + " ≈ <b>−0,92</b>.", res: "f(x) = 4/(1 + eˣ) in [−1; 1]: ≈ −0,92" },
+    { g: GWAS, band: { a: 0, b: 30 }, sec: { a: 0, b: 30 }, src: "Abitur Bayern 2024 (CAS) · Prüfungsteil B · Analysis, Aufgabengruppe 2, Aufgabe 1b",
+      text: "Ein mit Wasser gefülltes Glas wird aus dem Kühlschrank genommen; die Raumtemperatur beträgt 25 °C. Die Wassertemperatur wird durch <b>f(t) = 25 − 20 · e<sup>−0,014t</sup></b> beschrieben (t in Minuten seit der Entnahme, f(t) in °C). Bestimme die <b>mittlere Änderungsrate</b> der Wassertemperatur innerhalb der <b>ersten 30 Minuten</b> (auf Hundertstel).",
+      fields: [{ lab: "mittlere Änderungsrate ≈", unit: "°C/min", ans: (20 - 20 * Math.exp(-0.42)) / 30, tol: 0.006, wrong: v => {
+        if (Math.abs(v - (20 - 20 * Math.exp(-0.42))) < 0.02) return "Das ist die Temperaturänderung ΔT in °C. Teile noch durch Δt = 30 min.";
+        return dqWrong(v, 5, 25 - 20 * Math.exp(-0.42), 0, 30) || "Berechne f(0) und f(30) mit dem Taschenrechner.";
+      } }],
+      tip: "f(0) = 25 − 20 · e⁰ = 5; f(30) = 25 − 20 · e<sup>−0,42</sup> ≈ …",
+      ok: "Richtig: " + frac("f(30) − f(0)", "30 − 0") + " ≈ " + frac("11,86 − 5", "30") + " ≈ <b>0,23 °C/min</b>.", res: "Wasser in [0; 30]: ≈ 0,23 °C/min" },
+    { g: GWAS, sec0: { a: 0, b: 30 }, src: "Zusatzfrage zur Abituraufgabe 2024 (Wassertemperatur)",
+      text: "Welche Aussage beschreibt das Ergebnis aus b) im Sachzusammenhang richtig?",
+      mc: [["Nach 30 Minuten hat das Wasser eine Temperatur von 0,23 °C.", "Nein: f(30) ≈ 11,86 °C. 0,23 °C/min ist eine Änderung pro Minute."],
+           ["Das Wasser erwärmt sich in jeder Minute um genau 0,23 °C.", "Der Graph ist gekrümmt: Am Anfang erwärmt sich das Wasser schneller, später langsamer. 0,23 °C/min ist ein Mittelwert."],
+           ["In den ersten 30 Minuten erwärmt sich das Wasser im Mittel um etwa 0,23 °C pro Minute.", null],
+           ["Nach 30 Minuten ist das Wasser um 0,23 °C wärmer als zu Beginn.", "Insgesamt sind es etwa 6,86 °C (5 °C → 11,86 °C). 0,23 °C gilt pro Minute."]],
+      ok: "Richtig! Insgesamt steigt die Temperatur in 30 Minuten um etwa 6,86 °C, also im Mittel um 0,23 °C pro Minute.", res: "0,23 °C/min: im Mittel 0,23 °C Erwärmung pro Minute" },
+    { g: G13, band: { a: -0.5, b: 0.5 }, sec: { a: -0.5, b: 0.5 }, src: "Abitur Bayern 2013 · Analysis I, Teil 2, Aufgabe 1c",
+      text: "Gegeben ist f(x) = 2x · e<sup>−0,5x²</sup>. Berechne die <b>mittlere Änderungsrate</b> m<sub>S</sub> von f im Intervall <b>[−0,5; 0,5]</b> (auf Hundertstel).",
+      fields: [{ lab: "m<sub>S</sub> ≈", ans: 2 * Math.exp(-0.125), tol: 0.006, wrong: v => dqWrong(v, -Math.exp(-0.125), Math.exp(-0.125), -0.5, 0.5) || "Berechne f(0,5) und f(−0,5). Tipp: Der Graph ist punktsymmetrisch zum Ursprung." }],
+      tip: "f(0,5) = 2 · 0,5 · e<sup>−0,5 · 0,25</sup> = e<sup>−0,125</sup>; f(−0,5) = −f(0,5).",
+      ok: "Richtig: " + frac("f(0,5) − f(−0,5)", "0,5 − (−0,5)") + " = " + frac("2 · e<sup>−0,125</sup>", "1") + " ≈ <b>1,76</b>.", res: "f(x) = 2x · e^(−0,5x²) in [−0,5; 0,5]: ≈ 1,76" }
+  ]
+];
+AUF.push(AUF4);
+const LV = [{ n: "Grundlagen", s: "★", c: "#2e7d32" }, { n: "Standard", s: "★★", c: "#1f5fa8" }, { n: "Profi", s: "★★★", c: "#c62828" }];
+const PART = [
+  { n: "Am Graphen", d: ["Werte ablesen – mit Zwischenschritten", "Ohne Zwischenschritte, Sekanten vergleichen", "Punkte antippen, Aussagen beurteilen"] },
+  { n: "Rechnerisch", d: ["Einfache Terme, mit Zwischenschritten", "Schwierigere Terme mit Vorzeichen und Dezimalzahlen", "1/x, Intervall [2; 2 + h], Forscheraufgabe"] },
+  { n: "Sachkontext", d: ["Heißluftballon – mit Zwischenschritten", "Temperaturkurve – ablesen, runden, deuten", "Freier Fall, Einheiten, Begründen"] },
+  { n: "Abituraufgaben", note: "Aufgaben aus dem bayerischen Abitur – nur die Teilaufgaben zur mittleren Änderungsrate, in Du-Form und teils mit Zusatzfragen.", d: ["Pollen und Seilbahn – mit Zwischenschritten", "Abbildung auswerten, mittlere Steigung in %", "Exponentialfunktionen mit dem Taschenrechner"] }
+];
+const BALTAB = '<p class="task" style="margin-bottom:4px">Ein Heißluftballon startet. Die Tabelle zeigt seine Höhe h über dem Startplatz.</p><table class="dat"><tr><th>t in min</th>' + BAL.map(p => "<td>" + p[0] + "</td>").join("") + '</tr><tr><th>h in m</th>' + BAL.map(p => "<td>" + p[1] + "</td>").join("") + "</tr></table>";
+const TEMPTXT = '<p class="task" style="margin-bottom:8px">Das Diagramm zeigt die Temperatur T an einem Herbsttag (Uhrzeit t in h).</p>';
+
+/* ================= Ablauf ================= */
+const S = { part: 0, lvl: 0, idx: 0, mode: "pick", solved: false, tapA: null };
+const done = [[false, false, false], [false, false, false], [false, false, false], [false, false, false]];
+const results = {}, secsDone = {};
+let ivFound = [], merkeShown = false;
+const key = () => S.part + "-" + S.lvl;
+const curT = () => AUF[S.part][S.lvl][S.idx];
+const letter = i => "abcdefgh"[i];
+
+function updateHead() {
+  for (let i = 0; i < 4; i++) {
+    $("tab" + i).className = "tab" + (i === S.part ? " on" : "");
+    $("st" + i).textContent = done[i].map((d, l) => d ? LV[l].s : "").filter(x => x).join(" · ");
+  }
+  const L = AUF[S.part][S.lvl].length;
+  if (S.mode === "pick") { $("barfill").style.width = "0"; $("stepinfo").innerHTML = "Teil " + (S.part + 1) + ": " + PART[S.part].n; $("lvlchange").style.display = "none"; return; }
+  const n = S.mode === "step" ? S.idx + (S.solved ? 1 : 0) : L;
+  $("barfill").style.width = (100 * n / L) + "%";
+  $("stepinfo").innerHTML = '<span class="lvlbadge" style="background:' + LV[S.lvl].c + '">' + LV[S.lvl].s + " " + LV[S.lvl].n + "</span>" + (S.mode === "step" ? "Aufgabe " + (S.idx + 1) + " von " + L : "Niveau geschafft!");
+  $("lvlchange").style.display = S.mode === "step" ? "inline-block" : "none";
+}
+function hideExtras() { $("merke").style.display = "none"; $("nextwrap").style.display = "none"; }
+function renderRes() {
+  const r = results[key()] || [];
+  $("restitle").textContent = "Deine Ergebnisse – Teil " + (S.part + 1) + " " + LV[S.lvl].s;
+  $("reslist").innerHTML = r.map(x => "<li>" + x + "</li>").join("");
+  $("res").style.display = r.length && S.mode !== "pick" ? "block" : "none";
+}
+
+function showPicker(part) {
+  S.part = part; S.mode = "pick"; S.solved = false;
+  const g = AUF[part][1][0].g;
+  V.g = g; V.band = null; V.secs = []; V.attempt = null; V.pts = []; V.cross = null; draw();
+  $("readout").textContent = " ";
+  let h = "<h2>Teil " + (part + 1) + ": " + PART[part].n + "</h2>" + (PART[part].note ? "<p class='task' style='margin-bottom:6px'>" + PART[part].note + "</p>" : "") + "<p class='task'>Wähle dein Niveau. Du kannst es jederzeit wechseln.</p>";
+  for (let l = 0; l < 3; l++) h += '<button class="lvl' + (done[part][l] ? " done" : "") + '" data-l="' + l + '" style="border-color:' + LV[l].c + '"><b style="color:' + LV[l].c + '">' + LV[l].s + " " + LV[l].n + "</b><span>" + PART[part].d[l] + " · " + AUF[part][l].length + " Aufgaben</span></button>";
+  $("stepcard").innerHTML = h; $("stepcard").style.display = "block";
+  hideExtras(); renderRes();
+  document.querySelectorAll(".lvl").forEach(b => b.onclick = () => startLevel(+b.dataset.l));
+  updateHead();
+}
+function startLevel(l) {
+  S.lvl = l; S.idx = 0;
+  results[key()] = []; secsDone[key()] = [];
+  if (S.part === 1 && l === 2) ivFound = [];
+  renderStep();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setGraph(t) {
+  V.g = t.g; V.cross = null; V.attempt = null;
+  V.band = t.band || null; V.pts = (t.pts || []).slice();
+  const prev = (secsDone[key()] || []).filter(s => s.g === t.g);
+  V.secs = prev.map(s => ({ a: s.a, b: s.b, faint: true }));
+  if (t.sec0) V.secs.push({ a: t.sec0.a, b: t.sec0.b });
+  $("readout").textContent = t.kind && t.kind.startsWith("tap") ? "Tippe auf den Graphen, um einen Punkt zu wählen." : "Tippe in den Graphen, um Werte abzulesen.";
+  draw();
+}
+
+function renderStep() {
+  const t = curT();
+  S.mode = "step"; S.solved = false; S.tapA = null;
+  setGraph(t);
+  let h = "";
+  if (t.g === GBAL) h += BALTAB;
+  if (t.g === GTEMP) h += TEMPTXT;
+  h += "<h2>Aufgabe " + letter(S.idx) + ")</h2>" + (t.src ? '<div class="src">📝 ' + t.src + "</div>" : "") + "<p class='task'>" + t.text + "</p>";
+  if (t.mc) {
+    h += '<div class="opts">' + t.mc.map((o, i) => '<button class="opt" data-i="' + i + '">' + o[0] + "</button>").join("") + "</div>";
+    h += '<div class="row"><button id="chkmc">Prüfen</button>' + (t.tip ? '<button class="sec" id="tipb">Tipp</button>' : "") + '</div>';
+  } else if (t.kind === "tap1" || t.kind === "tap2") {
+    h += '<div class="tapinfo" id="tapinfo">' + (t.kind === "tap1" ? "Gewählt: noch kein Punkt B" : "Tippe zuerst Punkt A an.") + "</div>";
+    h += '<div class="row">' + (t.kind === "tap2" ? '<button class="sec" id="resetb">Neu wählen</button>' : "") + '<button class="sec" id="tipb">Tipp</button></div>';
+  } else {
+    const fl = t.kind === "iv" ? [{ lab: "a =" }, { lab: "b =" }] : t.fields;
+    h += '<div class="fields">' + fl.map((f, i) => '<div class="frow"><label for="in' + i + '">' + f.lab + '</label><input type="text" id="in' + i + '" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">' + (f.unit ? "<span>" + f.unit + "</span>" : "") + '<span class="mark" id="mk' + i + '"></span></div>').join("") + "</div>";
+    h += '<div class="row"><button id="chk">Prüfen</button>' + (t.tip ? '<button class="sec" id="tipb">Tipp</button>' : "") + "</div>";
+    h += '<div class="hint">Dezimalzahlen mit Komma, Brüche wie 5/3 sind erlaubt.</div>';
+  }
+  h += '<div class="tip" id="tip">' + (t.tip || "") + '</div><div class="fb" id="fb"></div><div class="row" id="wrow" style="display:none"><button id="weiter">Weiter ➜</button></div>';
+  $("stepcard").innerHTML = h; $("stepcard").style.display = "block";
+  hideExtras(); renderRes();
+  S.sel = null;
+  if (t.mc) {
+    document.querySelectorAll(".opt").forEach(b => b.onclick = () => selectMC(+b.dataset.i));
+    $("chkmc").onclick = () => checkMC(S.sel);
+  }
+  if ($("chk")) {
+    $("chk").onclick = check;
+    document.querySelectorAll(".fields input").forEach((inp, i, arr) => inp.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.ctrlKey && !e.metaKey) { e.preventDefault(); if (i < arr.length - 1 && arr[i + 1].value === "") arr[i + 1].focus(); else check(); }
+    }));
+  }
+  if ($("tipb")) $("tipb").onclick = () => { $("tip").style.display = "block"; };
+  if ($("resetb")) $("resetb").onclick = () => { if (S.solved) return; S.tapA = null; V.pts = []; V.attempt = null; draw(); $("tapinfo").textContent = "Tippe zuerst Punkt A an."; $("fb").className = "fb"; };
+  $("weiter").onclick = advance;
+  updateHead();
+}
+
+function success(t, msg, extraSec, resOverride) {
+  S.solved = true;
+  const fb = $("fb"); fb.className = "fb ok"; fb.innerHTML = "✔ " + msg;
+  $("tip").style.display = "none";
+  ["chk", "chkmc", "tipb", "resetb"].forEach(id => { if ($(id)) $(id).style.display = "none"; });
+  document.querySelectorAll(".fields input").forEach(i => i.disabled = true);
+  const res = resOverride || t.res;
+  if (res) results[key()].push(letter(S.idx) + ") " + res);
+  const sec = extraSec || t.sec;
+  if (sec) secsDone[key()].push({ a: sec.a, b: sec.b, lab: letter(S.idx) + ")", g: t.g });
+  const mine = secsDone[key()].filter(s => s.g === t.g);
+  V.secs = mine.map((s, i, arr) => ({ a: s.a, b: s.b, faint: i < arr.length - 1, tri: i === arr.length - 1 && sec !== undefined && sec !== null }));
+  if (!sec && t.sec0) V.secs.push({ a: t.sec0.a, b: t.sec0.b });
+  V.attempt = null; V.band = null; V.cross = null; draw();
+  renderRes();
+  $("wrow").style.display = "flex";
+  $("weiter").textContent = S.idx === AUF[S.part][S.lvl].length - 1 ? "Niveau abschließen ➜" : "Weiter ➜";
+  updateHead();
+}
+
+function check() {
+  if (S.solved) return;
+  const t = curT(), fb = $("fb");
+  if (t.kind === "iv") return checkIV();
+  let firstMsg = null, allOk = true;
+  t.fields.forEach((f, i) => {
+    const inp = $("in" + i), v = parseNum(inp.value), mk = $("mk" + i);
+    if (isNaN(v)) { allOk = false; inp.className = "badf"; mk.textContent = ""; if (!firstMsg) firstMsg = inp.value.trim() === "" ? "Fülle alle Felder aus." : "„" + inp.value + "“ ist keine Zahl. Verwende ein Komma als Dezimalzeichen."; return; }
+    if (Math.abs(v - f.ans) <= f.tol || (f.alt || []).some(a => Math.abs(v - a) <= f.tol)) { inp.className = "okf"; mk.textContent = "✔"; mk.style.color = "var(--ok)"; }
+    else { allOk = false; inp.className = "badf"; mk.textContent = "✘"; mk.style.color = "var(--bad)"; if (!firstMsg) firstMsg = (f.wrong && f.wrong(v)) || "Das stimmt noch nicht. Schau dir den Tipp an."; }
+  });
+  if (allOk) return success(t, t.ok);
+  fb.className = "fb bad"; fb.innerHTML = "✘ " + firstMsg;
+}
+
+function checkIV() {
+  const t = curT(), fb = $("fb");
+  const a = parseNum($("in0").value), b = parseNum($("in1").value);
+  if (isNaN(a) || isNaN(b)) { fb.className = "fb bad"; fb.innerHTML = "✘ Gib zwei Zahlen a und b ein."; return; }
+  if (a >= b) { fb.className = "fb bad"; fb.innerHTML = "✘ Im Intervall [a; b] muss a kleiner als b sein."; V.attempt = null; draw(); return; }
+  const m = (b * b - a * a) / (b - a), q = frac(fmt(b * b) + " − " + par(a * a), fmt(b) + " − " + par(a));
+  V.attempt = { a, b, grey: true }; V.band = { a, b };
+  if (Math.abs(m - t.target) < 1e-6) {
+    if (ivFound.some(p => Math.abs(p[0] - a) < 1e-9 && Math.abs(p[1] - b) < 1e-9)) { draw(); fb.className = "fb bad"; fb.innerHTML = "✘ Dieses Intervall hast du schon gefunden. Suche ein anderes!"; return; }
+    ivFound.push([a, b]);
+    return success(t, "Richtig: " + q + " = " + frac(fmt(b * b - a * a), fmt(b - a)) + " = <b>4</b>.", { a, b }, "[" + fmt(a) + "; " + fmt(b) + "]: " + q + " = 4");
+  }
+  draw();
+  fb.className = "fb bad"; fb.innerHTML = "✘ In [" + fmt(a) + "; " + fmt(b) + "] ist die mittlere Änderungsrate " + q + " = " + fmt(m) + ". " + (m > 4 ? "Das ist zu groß – nimm kleinere Zahlen." : "Das ist zu klein – nimm größere Zahlen.");
+}
+
+function selectMC(i) {
+  if (S.solved) return;
+  S.sel = i;
+  document.querySelectorAll(".opt").forEach((b, k) => { b.classList.remove("wrong"); b.classList.toggle("sel", k === i); });
+  $("fb").className = "fb";
+}
+function checkMC(i) {
+  if (S.solved) return;
+  const t = curT(), fb = $("fb");
+  if (i === null || i === undefined) { fb.className = "fb bad"; fb.innerHTML = "Tippe zuerst eine Antwort an."; return; }
+  const btn = document.querySelectorAll(".opt")[i];
+  btn.classList.remove("sel");
+  if (t.mc[i][1] === null) {
+    btn.classList.add("right"); document.querySelectorAll(".opt").forEach(b => b.disabled = true);
+    return success(t, t.ok);
+  }
+  btn.classList.add("wrong");
+  fb.className = "fb bad"; fb.innerHTML = "✘ " + t.mc[i][1];
+  if (t.mc[i][2]) { V.attempt = { a: t.mc[i][2].a, b: t.mc[i][2].b, grey: true }; draw(); }
+}
+
+// Antippen auf dem Graphen
+function tapPoint(x) {
+  const t = curT(), g = t.g, f = g.f, fb = $("fb");
+  const y = f(x);
+  if (y < g.ymin || y > g.ymax) { fb.className = "fb bad"; fb.innerHTML = "✘ Dieser Punkt liegt außerhalb des Bildes. Wähle einen anderen."; return; }
+  let a, b;
+  if (t.kind === "tap1") { a = t.xa; b = x; }
+  else {
+    if (S.tapA === null) { S.tapA = x; V.pts = [{ x, l: "A" }]; V.attempt = null; draw(); $("tapinfo").innerHTML = "A(" + fmt(x) + " | " + fmt(y) + ") gewählt. Tippe jetzt Punkt B an."; fb.className = "fb"; return; }
+    a = S.tapA; b = x;
+  }
+  if (Math.abs(a - b) < 1e-9) { fb.className = "fb bad"; fb.innerHTML = "✘ A und B dürfen nicht derselbe Punkt sein."; return; }
+  const ya = f(a), yb = f(b), m = (yb - ya) / (b - a);
+  V.pts = t.kind === "tap1" ? [{ x: a, l: "A" }, { x: b, l: "B" }] : [{ x: a, l: "A" }, { x: b, l: "B" }];
+  V.attempt = { a: Math.min(a, b), b: Math.max(a, b), grey: true };
+  draw();
+  const q = frac(fmt(yb) + " − " + par(ya), fmt(b) + " − " + par(a));
+  $("tapinfo").innerHTML = "A(" + fmt(a) + " | " + fmt(ya) + "), B(" + fmt(b) + " | " + fmt(yb) + ")";
+  if (Math.abs(m - t.target) < 1e-9) {
+    V.pts = [];
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+    success(t, "Richtig: " + q + " = <b>" + fmt(m) + "</b>." + (t.kind === "tap2" ? " Es gibt noch mehr Lösungen – alle diese Sekanten sind parallel." : ""), { a: lo, b: hi }, "[" + fmt(lo) + "; " + fmt(hi) + "]: mittlere Änderungsrate " + fmt(m));
+    $("tapinfo").style.display = "none";
+    return;
+  }
+  fb.className = "fb bad";
+  fb.innerHTML = "✘ Mit diesen Punkten ist die mittlere Änderungsrate " + q + " = " + fmt(m) + ". Gesucht ist " + fmt(t.target) + ". " + (m > t.target ? "Die Sekante muss weniger steil (stärker fallend) sein." : "Die Sekante muss steiler sein.") + (t.kind === "tap2" ? " Tippe erneut: zuerst A, dann B." : " Tippe einen anderen Punkt B an.");
+  if (t.kind === "tap2") S.tapA = null;
+}
+
+(function () {
+  const svg = $("g"); let down = false;
+  function pos(e) {
+    const g = V.g, G = geo(g), p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+    const q = p.matrixTransform(svg.getScreenCTM().inverse());
+    let x = g.xmin + (q.x - ML) / G.ux, y = g.ymax - (q.y - MT) / G.uy;
+    x = Math.max(g.xmin, Math.min(g.xmax, Math.round(x / (g.gx / 2)) * g.gx / 2));
+    y = Math.max(g.ymin, Math.min(g.ymax, Math.round(y / (g.gy / 2)) * g.gy / 2));
+    return { x, y };
+  }
+  const tapMode = () => S.mode === "step" && !S.solved && curT().kind && curT().kind.startsWith("tap");
+  function show(c) {
+    if (tapMode()) { V.cross = { x: c.x, y: V.g.f(c.x) }; draw(); $("readout").textContent = "Punkt (" + fmt(c.x) + " | " + fmt(V.g.f(c.x)) + ") – loslassen zum Auswählen"; return; }
+    V.cross = c; draw();
+    const g = V.g, exact = g.f ? Math.abs(g.f(c.x) - c.y) < 1e-9 : g.data.some(p => Math.abs(p[0] - c.x) < 1e-9 && Math.abs(p[1] - c.y) < 1e-9);
+    const rel = exact ? " = " : " ≈ ";
+    $("readout").textContent = (exact ? "Punkt auf dem Graphen: " : "Abgelesen: ") + g.xn.split(" ")[0] + rel + fmt(c.x) + "  |  " + g.yn.split(" ")[0] + rel + fmt(c.y);
+  }
+  svg.addEventListener("pointerdown", e => { if (S.mode === "pick") return; down = true; svg.setPointerCapture(e.pointerId); show(pos(e)); e.preventDefault(); });
+  svg.addEventListener("pointermove", e => { if (down) show(pos(e)); });
+  svg.addEventListener("pointerup", e => {
+    if (!down) return; down = false;
+    const c = pos(e);
+    if (tapMode()) { V.cross = null; $("readout").textContent = "Tippe auf den Graphen, um einen Punkt zu wählen."; tapPoint(c.x); } else show(c);
+  });
+  svg.addEventListener("pointercancel", () => { down = false; });
+})();
+
+function advance() {
+  if (S.mode !== "step" || !S.solved) return;
+  if (S.idx < AUF[S.part][S.lvl].length - 1) { S.idx++; renderStep(); return; }
+  showSummary();
+}
+function showSummary() {
+  S.mode = "sum"; done[S.part][S.lvl] = true;
+  $("stepcard").style.display = "none";
+  const mine = secsDone[key()];
+  const lastG = curT().g;
+  V.g = lastG; V.band = null; V.cross = null; V.attempt = null; V.pts = [];
+  V.secs = mine.filter(s => s.g === lastG).map(s => ({ a: s.a, b: s.b, lab: s.lab }));
+  $("readout").textContent = " "; draw();
+  renderRes();
+  const showM = !merkeShown; merkeShown = true;
+  $("merke").style.display = showM ? "block" : "none";
+  const nw = $("nextwrap"); let h = "";
+  if (S.lvl < 2) h += '<button data-a="up" style="background:' + LV[S.lvl + 1].c + '">' + LV[S.lvl + 1].s + " " + LV[S.lvl + 1].n + " in Teil " + (S.part + 1) + " ➜</button>";
+  if (S.part < 3) h += '<button data-a="next">Weiter zu Teil ' + (S.part + 2) + " ➜</button>";
+  h += '<button class="sec" data-a="pick">Anderes Niveau wählen</button>';
+  nw.innerHTML = h; nw.style.display = "flex";
+  nw.querySelectorAll("button").forEach(b => b.onclick = () => {
+    const a = b.dataset.a;
+    if (a === "up") startLevel(S.lvl + 1); else if (a === "next") showPicker(S.part + 1); else showPicker(S.part);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+  updateHead();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+for (let i = 0; i < 4; i++) $("tab" + i).onclick = () => showPicker(i);
+$("lvlchange").onclick = () => showPicker(S.part);
+
+/* ================= Lehrer-Shortcut: Strg/Cmd + Umschalt + Enter ================= */
+function solveCurrent() {
+  const t = curT();
+  if (t.mc) { selectMC(t.mc.findIndex(o => o[1] === null)); return checkMC(S.sel); }
+  if (t.kind === "tap1") { // passende Stelle suchen
+    for (let x = t.g.xmin; x <= t.g.xmax + 1e-9; x += t.g.gx / 2) { if (Math.abs(x - t.xa) > 1e-9 && Math.abs((t.g.f(x) - t.g.f(t.xa)) / (x - t.xa) - t.target) < 1e-9) return tapPoint(x); }
+  }
+  if (t.kind === "tap2") { S.tapA = null; tapPoint(0); return tapPoint(2); }
+  if (t.kind === "iv") {
+    let s = t.sol; if (ivFound.some(p => p[0] === s[0] && p[1] === s[1])) s = [-1, 5];
+    $("in0").value = fmt(s[0]); $("in1").value = fmt(s[1]); return checkIV();
+  }
+  t.fields.forEach((f, i) => { $("in" + i).value = fmt(f.ans); });
+  check();
+}
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "Enter") {
+    e.preventDefault(); e.stopPropagation();
+    if (S.mode === "pick") { const l = done[S.part].indexOf(false); if (l < 0) { if (S.part < 3) showPicker(S.part + 1); return; } startLevel(l); solveCurrent(); return; }
+    if (S.mode === "step" && !S.solved) { solveCurrent(); return; }
+    if (S.mode === "step") { advance(); if (S.mode === "step") solveCurrent(); return; }
+    if (S.mode === "sum") { const b = $("nextwrap").querySelector("button"); b.click(); if (S.mode === "step") solveCurrent(); }
+  }
+}, true);
+
+showPicker(0);
+</script>
+</body>
+</html>
